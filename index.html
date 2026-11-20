@@ -86,12 +86,12 @@ footer code{background:var(--soft);padding:1px 6px;border-radius:6px}
     <h1>우리집 <span class="badge">신랑이랑 같이</span></h1>
     <div class="today" id="today"></div>
   </header>
-  <div class="hero" id="room3d" role="img" aria-label="3D 블록 거실에 가젤(흰 토끼, 나)과 톰슨(여우, 신랑), 고양이 봉구와 하치가 있어요">
+  <div class="hero" id="room3d" role="img" aria-label="3D 블록 거실에 가젤(땋은 머리 여자, 나)과 톰슨(남자, 신랑), 고양이 봉구와 하치가 있어요">
     <div class="tag" id="tag-me"><span class="bub" id="b-me">♪</span><span class="nm">가젤</span></div>
     <div class="tag" id="tag-hus"><span class="bub" id="b-hus">♪</span><span class="nm">톰슨</span></div>
     <div class="tag pet" id="tag-bong"><span class="nm">봉구</span></div>
     <div class="tag pet" id="tag-hachi"><span class="nm">하치</span></div>
-    <div class="hint">드래그 회전 · 휠 확대/축소 · 누르면 깡충·벌러덩 · 액자·캣타워·캣휠도 눌러 보세요</div>
+    <div class="hint">드래그 회전 · 휠 확대/축소 · 누르면 깡충·벌러덩 · 액자·턴테이블·장난감·트리·소파·캣타워·캣휠·세탁기·건조기도 눌러 보세요</div>
     <div class="fallback" id="room3d-fail" hidden>3D 거실을 못 불러왔어요<br>인터넷 연결을 확인하고 새로고침해 주세요</div>
   </div>
   <div class="photo-box" id="photo-box" hidden role="dialog" aria-label="결혼사진 크게 보기"><img id="photo-img" alt="결혼사진: 지영과 신랑이 봉구와 하치를 안고 있어요"><button type="button" aria-label="닫기">✕</button></div>
@@ -307,6 +307,7 @@ const PHOTO = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBMRXhpZgAATU
 // 이 파일의 새 이름은 모두 { } 블록 안에 가둬서 다른 파일의 이름과 부딪치지 않게 한다.
 {
   const T = THREE;
+  const ROOM = room;                                     // 통째로 옮기는 묶음(group)의 부모
   let seed = 20261118;                                   // 늘 같은 모양이 나오게 고정된 난수
   const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
 
@@ -352,8 +353,8 @@ const PHOTO = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBMRXhpZgAATU
     box(room, -0.42, TOP, -0.42, W + 0.44, 0.06, 0.44, IVORY_D);               // 잘린 벽 윗면
     box(room, -0.42, TOP, 0, 0.44, 0.06, D + 0.02, IVORY_D);
     box(room, 0, 0, 0, W, 0.28, 0.07, IVORY_D);                                 // 걸레받이 (뒷벽)
-    box(room, 0, 0, 0, 0.07, 0.28, 0.85, IVORY_D);                              // 걸레받이 (왼벽, 문 양옆)
-    box(room, 0, 0, 2.75, 0.07, 0.28, D - 2.75, IVORY_D);
+    box(room, 0, 0, 0, 0.07, 0.28, 1.55, IVORY_D);                              // 걸레받이 (왼벽, 문 양옆 — 문은 z 1.6~3.3)
+    box(room, 0, 0, 3.45, 0.07, 0.28, D - 3.45, IVORY_D);
   }
 
   // ───────── 세탁실 샷시: 흰 틀 유리 미닫이문 2짝 (뒷벽부터 짧게) ─────────
@@ -403,6 +404,19 @@ const PHOTO = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBMRXhpZgAATU
     };
     const FRAME = "#b08a5e", BAR = "#f1e8d4", f = 0.1, bar = 0.09;
     const sheer = new T.MeshStandardMaterial({ color: "#ffffff", roughness: 0.9, transparent: true, opacity: 0.72, depthWrite: false, side: T.DoubleSide });
+    // 작은 크리스마스 리스: 초록 고리 + 연두 잎 몇 장 + 빨간 열매 + 아래 빨간 리본
+    const wreath = (cx, cy) => {
+      const g = group(room, cx, cy, 0.16);
+      const ring = new T.Mesh(new T.TorusGeometry(0.2, 0.075, 8, 18), pmat("#2f6b45", "leaf", 3, 1)); ring.castShadow = true; g.add(ring);
+      for (let i = 0; i < 8; i++) {                        // 잎 덩어리 (복셀 느낌)
+        const a = i / 8 * Math.PI * 2;
+        box(g, Math.cos(a) * 0.2 - 0.05, Math.sin(a) * 0.2 - 0.05, 0.02, 0.1, 0.1, 0.06, i % 2 ? "#3f8a55" : "#4e9a5e", false);
+      }
+      for (const a of [0.5, 1.6, 2.6, 3.7, 5.2]) box(g, Math.cos(a) * 0.2 - 0.03, Math.sin(a) * 0.2 - 0.03, 0.07, 0.06, 0.06, 0.05, "#d9483b", false);   // 빨간 열매
+      box(g, -0.12, -0.27, 0.06, 0.1, 0.08, 0.05, "#d9483b", false); box(g, 0.02, -0.27, 0.06, 0.1, 0.08, 0.05, "#d9483b", false);   // 리본 날개
+      box(g, -0.03, -0.28, 0.07, 0.06, 0.08, 0.05, "#b8352b", false);                                                                   // 리본 매듭
+      box(g, -0.07, -0.42, 0.06, 0.04, 0.14, 0.04, "#d9483b", false); box(g, 0.03, -0.42, 0.06, 0.04, 0.14, 0.04, "#d9483b", false);   // 리본 꼬리
+    };
     WINS.forEach(([x0, y0, w, h, plain], k) => {
       const glass = new T.Mesh(new T.PlaneGeometry(w, h), new T.MeshBasicMaterial({ map: skyTex(k) }));
       glass.position.set(x0 + w / 2, y0 + h / 2, -0.12); room.add(glass);
@@ -414,6 +428,7 @@ const PHOTO = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBMRXhpZgAATU
       tbox(room, x0 - f, y0 + h, 0, w + 2 * f, f, 0.08, FRAME, "wood");
       tbox(room, x0 - f, y0, 0, f, h, 0.08, FRAME, "wood");
       tbox(room, x0 + w, y0, 0, f, h, 0.08, FRAME, "wood");
+      if (!plain) wreath(x0 + w / 2, y0 + h * 0.62 + bar / 2);   // 창 가운데 작은 크리스마스 리스 (창살 십자 위, 세탁실 창은 빼고)
       if (plain) return;                                     // 세탁실 작은 창: 틀만 (창살·커튼 없음)
       box(room, x0, y0 + h - bar - 0.04, -0.02, w, bar, 0.12, BAR);              // 아이보리 창살: 맨 위 가로대
       box(room, x0, y0 + h * 0.62, -0.02, w, bar, 0.12, BAR);                    // 가운데 가로대
@@ -447,6 +462,7 @@ const PHOTO = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBMRXhpZgAATU
 
   // ───────── 문 (왼쪽 벽): 세탁실 샷시처럼 반투명 유리 + 회색 틀, 한 짝짜리 + 손잡이 ─────────
   {
+    const room = group(ROOM, 0, 0, 0.7);                  // 캣휠과 떨어지게 앞쪽으로 0.7칸 옮김
     const z0 = 0.9, dw = 1.7, dh = 3.1, GRAY = "#8a8e93", S = 0.09;
     const glass = new T.MeshStandardMaterial({ color: "#d6ebf5", roughness: 0.1, metalness: 0.1, transparent: true, opacity: 0.35, depthWrite: false });
     box(room, 0.04, 0, z0, 0.1, S, dw, GRAY);                                   // 회색 틀: 아래·위·양옆·가운데 가로살
@@ -464,6 +480,7 @@ const PHOTO = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBMRXhpZgAATU
 
   // ───────── 달력 (왼쪽 벽) — 오늘 날짜 ─────────
   {
+    const room = group(ROOM, 0, 0, 0.6);                  // 문을 따라 앞쪽으로 0.6칸 옮김
     const c = document.createElement("canvas"); c.width = c.height = 128;
     const g = c.getContext("2d"), now = new Date();
     g.fillStyle = "#fffaf0"; g.fillRect(0, 0, 128, 128);
@@ -480,6 +497,7 @@ const PHOTO = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBMRXhpZgAATU
   // ───────── 시계 (TV 위) — 지금 시각 ─────────
   const clockHands = [];
   {
+    const room = group(ROOM, 0, 0, 0.5);                  // TV 를 따라 앞쪽으로 0.5칸 옮김
     const rim = new T.Mesh(new T.CylinderGeometry(0.48, 0.48, 0.1, 28), mat(WALNUT));
     rim.rotation.z = Math.PI / 2; rim.position.set(0.06, 3.95, 6.9); rim.castShadow = true; room.add(rim);
     const face = new T.Mesh(new T.CylinderGeometry(0.4, 0.4, 0.05, 28), mat("#fffaf0"));
@@ -580,11 +598,11 @@ const PHOTO = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBMRXhpZgAATU
     box(room, x0 + 1.55, y0 + h + 0.51, z0 + 0.3, 0.2, 0.14, 0.2, "#7fae7e");
   }
 
-  // ───────── 캣타워 (가운데 창문 오른쪽 반 앞, 나무 왼쪽) — 캣휠과 같은 연한 오크. 굵은 기둥 + 흰 링 구멍 4개 + 양옆 선반 + 받침 + 스크래쳐 기둥. 누르면 봉구가 봉을 타고 올라가 꼭대기 발판에서 창밖 구경 ─────────
+  // ───────── 캣타워 (가운데 창문 오른쪽 반 앞, 냉장고 왼쪽) — 캣휠과 같은 연한 오크. 굵은 기둥 + 흰 링 구멍 4개 + 양옆 선반 + 받침 + 스크래쳐 기둥. 누르면 봉구가 봉을 타고 올라가 꼭대기 발판에서 창밖 구경 ─────────
   {
     const room = hot.tower = group(ROOM);
     const LOAK = "#d2ab7a", CARPET = "#9c9488", SISAL = "#8f8170";
-    const px = 13.9, pw = 0.6, pz = 0.32, pd = 0.5, ph = 3.3;   // 오른쪽 창의 오른쪽 반만 가리게                  // 굵은 원목 기둥
+    const px = 13.8, pw = 0.6, pz = 0.32, pd = 0.5, ph = 3.3;   // 가운데 창의 오른쪽 반만 가리게 (스크래쳐·긴 발판이 창 가운데 세로살부터)                  // 굵은 원목 기둥
     tbox(room, px - 0.75, 0, pz - 0.05, 2.1, 0.28, pd + 0.2, LOAK, "wood");    // 아래 받침
     tbox(room, px - 0.55, 0.28, pz + 0.05, 1.1, 0.03, pd, CARPET, "carpet");    //  └ 카펫 패드
     tbox(room, px, 0.28, pz, pw, ph, pd, LOAK, "wood");
@@ -616,14 +634,71 @@ const PHOTO = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBMRXhpZgAATU
     tbox(room, sxp - 0.17, 2.73, pz + 0.08, px - sxp + 0.14, 0.02, pd - 0.16, CARPET, "carpet");
   }
 
-  // ───────── TV 와 TV 장 (왼쪽 벽) ─────────
+  // ───────── 캣터널 (캣타워와 러그 사이 바닥) — 사진 참고: 바스락 종이 느낌 아이보리 터널, 사진보다 짧게. 위쪽에 구멍 하나 ─────────
   {
-    for (const lz of [5.0, 8.7]) for (const lx of [0.15, 0.9]) box(room, lx, 0, lz, 0.08, 0.15, 0.08, BLACK);   // 다리
-    tbox(room, 0.08, 0.15, 4.9, 1.0, 0.65, 4.0, OAK, "wood");                            // 장
-    tbox(room, 1.08, 0.25, 5.05, 0.03, 0.45, 1.8, WAL, "wood");                          // 서랍 두 칸
-    tbox(room, 1.08, 0.25, 7.05, 0.03, 0.45, 1.75, WAL, "wood");
-    box(room, 1.11, 0.45, 5.85, 0.04, 0.05, 0.25, BRASS);                       // 손잡이
-    box(room, 1.11, 0.45, 7.8, 0.04, 0.05, 0.25, BRASS);
+    const IV = new THREE.MeshStandardMaterial({ color: "#efe6d2", roughness: 0.95, side: THREE.DoubleSide, flatShading: true });
+    const IV2 = new THREE.MeshStandardMaterial({ color: "#e4d8c0", roughness: 0.95, side: THREE.DoubleSide, flatShading: true });
+    const tg = group(room, 13.2, 0.31, 3.2); tg.rotation.y = 0.45;            // 터널 가운데 (바닥에서 반지름만큼 위)
+    const n = 7, seg = 0.2, R = [0.3, 0.315, 0.295, 0.31, 0.3, 0.318, 0.302];  // 마디마다 굵기를 살짝 달리해 구겨진 느낌
+    for (let i = 0; i < n; i++) {
+      const c = new THREE.Mesh(new THREE.CylinderGeometry(R[i], R[(i + 1) % n], seg + 0.01, 11, 1, true), i % 3 === 1 ? IV2 : IV);
+      c.rotation.set(0, 0, Math.PI / 2); c.rotateY(i * 0.7);                  // 눕히고, 마디마다 각진 면을 돌려 구김
+      c.position.x = -n * seg / 2 + seg * (i + 0.5); c.castShadow = c.receiveShadow = true; tg.add(c);
+    }
+    for (const ex of [-n * seg / 2, n * seg / 2]) {                            // 양쪽 입구 테
+      const rim = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.02, 6, 20), mat("#d8cbb0"));
+      rim.rotation.y = Math.PI / 2; rim.position.x = ex; tg.add(rim);
+    }
+    const hole = new THREE.Mesh(new THREE.CircleGeometry(0.12, 14), mat("#5a4a3a"));   // 위쪽 구멍
+    hole.rotation.x = -Math.PI / 2; hole.scale.set(1.3, 0.85, 1); hole.position.set(-0.15, 0.318, 0.02); tg.add(hole);
+    hot.tunnel = tg;
+  }
+
+  // ───────── 바닥 고양이 장난감 (러그 앞 빈 바닥) — 사진 참고: 투명 흡착판 + 긴 은색 스프링 + 까만 마개 + 빨간 방울 + 분홍·파랑 깃털. 살랑살랑 흔들림, 누르면 봉구·하치가 잡으러 옴 ─────────
+  {
+    const tx = 8.0, tz = 10.4;
+    const g = hot.toyG = group(ROOM, tx, 0, tz);
+    const clear = new THREE.MeshStandardMaterial({ color: "#e8f2f6", transparent: true, opacity: 0.55, roughness: 0.1, depthWrite: false });
+    const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.2, 0.04, 20), clear); cup.position.y = 0.02; g.add(cup);   // 흡착판
+    const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 0.08, 12), clear); stem.position.y = 0.08; g.add(stem);
+    const sway = group(g, 0, 0.1, 0);                                                     // 여기부터 위가 흔들림
+    const turns = 30, H = 1.2, pts = [];
+    for (let i = 0; i <= turns * 12; i++) { const a = i / 12 * Math.PI * 2; pts.push(new THREE.Vector3(Math.cos(a) * 0.025, i / (turns * 12) * H, Math.sin(a) * 0.025)); }
+    const spring = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), turns * 12, 0.005, 4, false),
+      new THREE.MeshStandardMaterial({ color: "#d9dde2", metalness: 0.8, roughness: 0.2 }));
+    sway.add(spring);                                                                     // 은색 스프링
+    const capM = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.12, 12), mat("#1f1d1d")); capM.position.y = H + 0.06; sway.add(capM);   // 까만 마개
+    const bead = new THREE.Mesh(new THREE.SphereGeometry(0.065, 14, 10), mat("#e0304e")); bead.position.set(0.0, H + 0.16, 0.0); sway.add(bead);   // 빨간 방울
+    const ringB = new THREE.Mesh(new THREE.TorusGeometry(0.045, 0.01, 6, 14), mat("#5fd06a")); ringB.position.set(0, H + 0.16, 0); ringB.rotation.y = 0.6; sway.add(ringB);
+    const FEATHER = ["#f05a8a", "#e0457b", "#ff7aa8", "#3fa0d8", "#2bb5b0", "#4c7fe0"];
+    FEATHER.forEach((c, i) => {                                                           // 깃털: 위로 부채꼴로 퍼짐
+      const fg = group(sway, 0, H + 0.18, 0);
+      fg.rotation.set((i % 2 ? 0.25 : -0.2), i * 1.05, (i < 3 ? -1 : 1) * (0.35 + (i % 3) * 0.2));
+      box(fg, -0.055, 0, -0.01, 0.11, 0.55 - (i % 3) * 0.07, 0.02, c, false);          // 깃털 몸통
+      box(fg, -0.035, 0.53 - (i % 3) * 0.07, -0.008, 0.07, 0.14, 0.016, c, false);     // 가늘어지는 끝
+    });
+    hot.toy = { sway, at: [new THREE.Vector3(tx - 0.46, 0, tz + 0.46), new THREE.Vector3(tx + 0.48, 0, tz - 0.48)], face: [Math.PI * 0.75, -Math.PI * 0.25] };   // 화면에서 봉구 왼쪽·하치 오른쪽, 옆모습으로 마주 보고
+  }
+
+  // ───────── TV 와 TV 장 (왼쪽 벽) — 사진 참고: 밝은 오크 3칸 (가운데만 가로 창살 문) + 얇은 스틸 다리 틀 ─────────
+  {
+    const room = group(ROOM, 0, 0, 0.5);                  // 문·달력을 따라 앞쪽으로 0.5칸 옮김
+    const steel = new THREE.MeshStandardMaterial({ color: "#c9cdd2", metalness: 0.55, roughness: 0.3 });
+    const TOAK = "#c99a62", TOAK2 = "#d0a56f", GROOVE = "#8a6440", z0 = 4.9, L = 4.0, x1 = 1.08;
+    for (const lz of [z0 + 0.05, z0 + L / 2 - 0.02, z0 + L - 0.09]) for (const lx of [0.12, 1.0])
+      box(room, lx, 0, lz, 0.04, 0.15, 0.04, "#c9cdd2").material = steel;              // 얇은 스틸 다리
+    for (const lx of [0.12, 1.0]) box(room, lx, 0.11, z0 + 0.05, 0.04, 0.04, L - 0.1, "#c9cdd2").material = steel;   // 긴 스틸 가로대 (앞·뒤)
+    tbox(room, 0.08, 0.15, z0, 1.0, 0.65, L, TOAK, "wood");                              // 오크 몸통
+    const sec = L / 3;
+    for (const k of [0, 2]) tbox(room, x1, 0.2, z0 + k * sec + 0.04, 0.02, 0.55, sec - 0.08, TOAK2, "wood");   // 양쪽 민무늬 문
+    for (const k of [1, 2]) box(room, x1, 0.18, z0 + k * sec - 0.01, 0.025, 0.6, 0.02, GROOVE, false);        // 칸 사이 홈
+    // 은은한 나무결: 문마다 가는 결 몇 줄 (아주 살짝 진하게)
+    for (const k of [0, 2]) for (const [gy, gz, gl] of [[0.33, 0.15, 0.7], [0.48, 0.45, 0.6], [0.62, 0.2, 0.85], [0.41, 0.8, 0.4]])
+      box(room, x1 + 0.02, gy, z0 + k * sec + gz, 0.004, 0.012, gl, "#b88a55", false);
+    // 가운데 칸: 안쪽이 어둡게 비치는 가로 창살 문
+    box(room, x1 - 0.02, 0.22, z0 + sec + 0.06, 0.03, 0.51, sec - 0.12, "#3b2a1f", false);
+    for (let i = 0; i < 9; i++) tbox(room, x1, 0.23 + i * 0.056, z0 + sec + 0.06, 0.03, 0.034, sec - 0.12, TOAK2, "wood");
+    for (const lz of [z0 + sec + 0.04, z0 + 2 * sec - 0.08]) tbox(room, x1, 0.2, lz, 0.035, 0.55, 0.04, TOAK, "wood");   // 창살 문 양옆 틀
     box(room, 0.3, 0.8, 6.6, 0.4, 0.06, 0.6, BLACK);                            // TV 받침
     box(room, 0.42, 0.86, 6.85, 0.1, 0.3, 0.1, BLACK);
     box(room, 0.35, 1.15, 5.2, 0.12, 1.6, 3.4, BLACK);                          // TV
@@ -640,8 +715,90 @@ const PHOTO = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBMRXhpZgAATU
     tbox(room, 0.35, 1.05, 4.93, 0.4, 0.3, 0.4, "#6f9a72", "leaf");
   }
 
+  // ───────── LP 장식장 (왼쪽 벽, TV장과 트리 사이) — 사진 참고: 짙은 네이비 판 + 크롬 봉 프레임·볼 조인트 모듈 가구 두 칸
+  //            아래 칸은 네이비 문(열쇠 구멍), 위 칸은 앞이 뚫려 있고 왼쪽 반쯤 LP 가 꽂혀 있음. 위에 빈티지 LP 플레이어(밝은 회색 + 나무 옆판 + 투명 뚜껑) ─────────
+  {
+    const x0 = 0.05, dx = 0.9, z0 = 11.0, wz = 1.65, y0 = 0.12, mh = 0.78, NAVY = "#1d2a4a";
+    const navy = new THREE.MeshStandardMaterial({ color: NAVY, roughness: 0.3, metalness: 0.25 });
+    const chrome = new THREE.MeshStandardMaterial({ color: "#e3e6ea", metalness: 0.85, roughness: 0.15 });
+    const nb = (x, y, z, w, h, d) => { box(room, x, y, z, w, h, d, NAVY).material = navy; };
+    nb(x0, y0, z0, dx, mh, wz);                                                     // 아래 칸 (닫힌 문)
+    box(room, x0 + dx, y0 + 0.03, z0 + 0.03, 0.006, mh - 0.06, wz - 0.06, "#16213b", false);   // 문 테두리 틈
+    nb(x0 + dx + 0.004, y0 + 0.04, z0 + 0.04, 0.01, mh - 0.08, wz - 0.08);          // 문
+    const lock = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.03, 16), chrome);   // 열쇠 구멍 (위쪽 가운데)
+    lock.rotation.z = Math.PI / 2; lock.position.set(x0 + dx + 0.02, y0 + mh - 0.14, z0 + wz * 0.4); room.add(lock);
+    const u = y0 + mh;                                                              // 위 칸: 뒤·양옆·윗판만 (앞은 뚫림)
+    nb(x0, u, z0, 0.03, mh, wz); nb(x0, u, z0, dx, mh, 0.03); nb(x0, u, z0 + wz - 0.03, dx, mh, 0.03); nb(x0, u + mh - 0.03, z0, dx, 0.03, wz);
+    // 크롬 봉 프레임 + 모서리 볼 조인트
+    const rod = (len) => new THREE.CylinderGeometry(0.022, 0.022, len, 10);
+    const add = (geo, x, y, z, rx = 0, rz = 0) => { const m = new THREE.Mesh(geo, chrome); m.position.set(x, y, z); m.rotation.set(rx, 0, rz); m.castShadow = true; room.add(m); };
+    const X = [x0 + 0.02, x0 + dx], Z = [z0, z0 + wz], Y = [y0, u, u + mh];
+    for (const x of X) for (const z of Z) add(rod(mh * 2), x, y0 + mh, z);                          // 세로 봉
+    for (const y of Y) {
+      for (const x of X) add(rod(wz), x, y, z0 + wz / 2, Math.PI / 2);                              // 앞뒤 가로 봉
+      for (const z of Z) add(rod(dx), x0 + dx / 2 + 0.01, y, z, 0, Math.PI / 2);                    // 옆 가로 봉
+      for (const x of X) for (const z of Z) add(new THREE.SphereGeometry(0.04, 12, 10), x, y, z);   // 볼 조인트
+    }
+    for (const x of X) for (const z of Z) add(rod(y0), x, y0 / 2, z);                              // 짧은 다리
+    // LP 판: 위 칸 왼쪽 반쯤에 세워서 (살짝 기울어짐), 앞쪽 한 장은 표지가 보이게
+    const LP = ["#e8e2d6", "#c9a46a", "#2c2c30", "#8a3b34", "#d7d2c4", "#3d5a7a", "#efe9dc", "#5b4636", "#b8b2a6", "#232326"];
+    LP.forEach((c, i) => {
+      const g = group(room, x0 + 0.08, u + 0.01, z0 + 0.07 + i * 0.045);
+      g.rotation.x = 0.1 + (i % 3) * 0.03;                                          // 왼쪽(벽 쪽)으로 살짝 기댐
+      box(g, 0, 0, 0, 0.7, 0.68, 0.025, c);
+    });
+    const cover = group(room, x0 + 0.1, u + 0.01, z0 + 0.55); cover.rotation.x = 0.16;   // 앞 표지 한 장 (까만 바탕 + 인물 실루엣 느낌)
+    box(cover, 0, 0, 0, 0.72, 0.7, 0.025, "#1f1f22");
+    box(cover, 0.3, 0.12, 0.026, 0.004, 0.45, 0.16, "#b57a4a", false);
+    box(cover, 0.3, 0.5, 0.03, 0.004, 0.12, 0.1, "#3a2620", false);
+    box(cover, 0.3, 0.06, -0.01, 0.004, 0.05, 0.3, "#e8e2d6", false);
+    // 빈티지 LP 플레이어 (장식장 위): 밝은 회색 몸통 + 양 끝 나무 옆판 + 앞면 가로 통풍 슬릿 두 묶음 + 투명 뚜껑 속 턴테이블. 누르면 가젤이 LP 를 올려 30분 재생
+    {
+      const room = hot.playerG = group(ROOM);
+      const py = u + mh + 0.01, px0 = x0 + 0.12, pdx = 0.72, pz0 = z0 + 0.12, pw = wz - 0.24, ph = 0.36;
+      box(room, px0, py, pz0 + 0.06, pdx, ph, pw - 0.12, "#e6e3dc");                     // 몸통
+      for (const ez of [pz0, pz0 + pw - 0.06]) tbox(room, px0, py, ez, pdx, ph + 0.02, 0.06, "#c08a55", "wood");   // 나무 옆판
+      for (const [sz, n] of [[pz0 + 0.18, 9], [pz0 + pw - 0.18 - 0.48, 9]])           // 앞면 통풍 슬릿
+        for (let i = 0; i < n; i++) box(room, px0 + pdx, py + 0.05 + i * 0.03, sz, 0.004, 0.012, 0.48, "#55534e", false);
+      const spin = group(room, px0 + pdx / 2 - 0.03, py + ph, pz0 + pw * 0.42);         // 돌아가는 부분: 턴테이블 판 + 라벨 (+ 올린 LP)
+      const plat = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.03, 28), mat("#3c3c40")); plat.position.y = 0.015; spin.add(plat);
+      const label = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.005, 16), mat("#d9483b")); label.position.y = 0.033; spin.add(label);
+      box(spin, 0.12, 0.031, -0.01, 0.06, 0.004, 0.02, "#f2efe6", false);              // 돌아가는 게 보이게 작은 흰 표시
+      box(room, px0 + 0.12, py + ph, pz0 + pw * 0.72, 0.36, 0.03, 0.03, "#c9cdd2");     // 톤암
+      const lidG = group(room, px0 + 0.01, py + ph + 0.2, pz0 + pw / 2);                 // 투명 뚜껑 (뒤쪽 경첩으로 열림)
+      const lid = new THREE.Mesh(new THREE.BoxGeometry(pdx - 0.02, 0.2, pw - 0.14),
+        new THREE.MeshStandardMaterial({ color: "#eef6fb", transparent: true, opacity: 0.22, roughness: 0.05, depthWrite: false }));
+      lid.position.set(pdx / 2 - 0.01, -0.1, 0); lidG.add(lid);
+      // LP 한 장 (처음엔 숨김): 장식장 칸에서 꺼내 턴테이블에 올림
+      const vinyl = group(ROOM); vinyl.visible = false;
+      const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.012, 28), mat("#151517")); vinyl.add(disc);
+      const vl = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.065, 0.014, 16), mat("#f0c64a")); vinyl.add(vl);
+      for (const r of [0.11, 0.15, 0.185]) { const g = new THREE.Mesh(new THREE.TorusGeometry(r, 0.003, 4, 28), mat("#2a2a2e")); g.rotation.x = Math.PI / 2; g.position.y = 0.007; vinyl.add(g); }
+      // 도는 게 보이게: 판 위 은은한 빛줄기 두 줄 + 라벨 위 흰 글씨 줄
+      const sheen = new THREE.MeshBasicMaterial({ color: "#8a8a92", transparent: true, opacity: 0.45, depthWrite: false });
+      for (const a of [0, Math.PI]) { const b = new THREE.Mesh(cube, sheen); b.scale.set(0.11, 0.002, 0.025); b.position.set(Math.cos(a) * 0.13, 0.008, Math.sin(a) * 0.13); b.rotation.y = -a; vinyl.add(b); }
+      box(vinyl, -0.04, 0.007, -0.012, 0.08, 0.002, 0.012, "#fff8e6", false); box(vinyl, -0.025, 0.007, 0.01, 0.05, 0.002, 0.01, "#fff8e6", false);
+      // 반투명 음표 열여덟 개 (재생 중에 거실 쪽으로 넓게 흘러나옴)
+      const NOTE = ["#f08aa5", "#9cc3e6", "#f6d36b", "#a8d5a2"];
+      const notes = Array.from({ length: 18 }, (_, k) => {
+        const m = new THREE.MeshBasicMaterial({ color: NOTE[k % 4], transparent: true, opacity: 0, depthWrite: false });
+        const g = group(ROOM); g.visible = false; g.rotation.y = Math.PI / 4;
+        const part = (x, y, w, h) => { const b = new THREE.Mesh(cube, m); b.scale.set(w, h, 0.03); b.position.set(x + w / 2, y + h / 2, 0); g.add(b); };
+        part(0, 0, 0.1, 0.075); part(0.075, 0.05, 0.025, 0.2);                           // 머리 + 기둥
+        if (k % 2) { part(0.2, 0.0, 0.1, 0.075); part(0.275, 0.05, 0.025, 0.2); part(0.075, 0.22, 0.225, 0.035); }   // 두 개 이은 음표 ♫
+        else part(0.1, 0.18, 0.06, 0.035);                                                // 깃발 ♪
+        return { g, m };
+      });
+      hot.player = { spin, lidG, vinyl, notes,
+        shelf: new THREE.Vector3(x0 + 0.45, u + 0.4, z0 + 0.45),                          // LP 꺼내는 자리 (장식장 위 칸)
+        on: new THREE.Vector3(spin.position.x, py + ph + 0.04, spin.position.z),          // 턴테이블 위
+        top: new THREE.Vector3(px0 + pdx / 2, py + ph + 0.35, pz0 + pw / 2) };          // 음표 나오는 자리
+    }
+  }
+
   // ───────── 소파 (창문 아래, 카멜색) — 은은한 천 질감 + 쿠션 가장자리를 한 단 낮춰 도톰하게 ─────────
   {
+    const room = hot.sofa = group(ROOM);                // 누르면 가젤·톰슨이 같이 감
     const C = "#c08a52", C2 = "#cf9a62", C3 = "#a8743f", HI = "#d6a46d";
     for (const lx of [5.25, 10.6]) for (const lz of [0.65, 2.0]) tbox(room, lx, 0, lz, 0.15, 0.15, 0.15, WAL, "wood");   // 나무 다리
     tbox(room, 5.1, 0.15, 0.5, 5.8, 0.55, 1.75, C3, "fabric");                   // 바닥 몸통
@@ -677,14 +834,15 @@ const PHOTO = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBMRXhpZgAATU
 
   // ───────── 크리스마스 트리 (왼쪽 벽, TV 옆) — 빨간 화분 + 층층이 줄어드는 초록 블록 + 장식 공·전구 + 꼭대기 금색 별 ─────────
   {
-    const cx = 1.2, cz = 12.5;                                   // TV 장에서 앞쪽으로 떨어뜨림 (사이에 놓을 물건 자리)
+    const room = hot.tree = group(ROOM);                // 누르면 가젤·톰슨이 같이 감
+    const cx = 1.2, cz = 15.3;                                   // TV 장에서 앞쪽으로 멀리 (사이에 LP 장식장)
     tbox(room, cx - 0.4, 0, cz - 0.4, 0.8, 0.5, 0.8, "#b8423a", "fabric");                 // 빨간 화분
     box(room, cx - 0.43, 0.42, cz - 0.43, 0.86, 0.1, 0.86, "#e9c766");                      //  └ 금색 테
     tbox(room, cx - 0.1, 0.5, cz - 0.1, 0.2, 0.4, 0.2, "#6b4630", "wood");                  // 줄기
     const G = ["#2f6b45", "#3a7d50"];
     const tiers = [[1.9, 0.85, 0.6], [1.55, 1.45, 0.6], [1.2, 2.05, 0.55], [0.85, 2.6, 0.5], [0.5, 3.1, 0.45]];   // [폭, 높이, 두께]
     const BALL = ["#d9483b", "#e9c766", "#5b7fa8", "#f7f5f0"];
-    const glow = new THREE.MeshStandardMaterial({ color: "#ffe9a8", emissive: "#ffd36a", emissiveIntensity: 0.9 });
+    hot.bulbs = [];                                        // 전구마다 따로 빛남 (room3d.js 가 리듬을 바꿔 가며 반짝임)
     tiers.forEach(([s, y, t], i) => {
       tbox(room, cx - s / 2, y, cz - s / 2, s, t, s, G[i % 2], "leaf");
       if (i === tiers.length - 1) return;
@@ -694,31 +852,104 @@ const PHOTO = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBMRXhpZgAATU
       });
       for (const [u, v] of [[0.6, 1], [1, -0.6], [-1, 0.5], [-0.5, -1]]) {               // 노란 전구
         const px = cx + (Math.abs(u) === 1 ? u * s / 2 : u * s / 2.5), pz = cz + (Math.abs(v) === 1 ? v * s / 2 : v * s / 2.5);
-        const b = box(room, px - 0.04, y + t - 0.12, pz - 0.04, 0.08, 0.08, 0.08, "#ffe9a8", false); b.material = glow;
+        const b = box(room, px - 0.05, y + t - 0.13, pz - 0.05, 0.1, 0.1, 0.1, "#ffe9a8", false);
+        b.material = new THREE.MeshStandardMaterial({ color: "#ffe9a8", emissive: "#ffd36a", emissiveIntensity: 0.9 });
+        hot.bulbs.push(b.material);
       }
     });
     const star = new THREE.MeshStandardMaterial({ color: "#f2c94c", emissive: "#e9b23a", emissiveIntensity: 0.5 });
-    for (const [w, h] of [[0.16, 0.5], [0.5, 0.16]]) box(room, cx - w / 2, 3.62 + (0.5 - h) / 2, cz - 0.06, w, h, 0.12, "#f2c94c").material = star;   // 금색 별
-    box(room, cx - 0.12, 3.75, cz - 0.07, 0.24, 0.24, 0.14, "#f2c94c").material = star;
+    const sh = new THREE.Shape();                          // 꼭짓점 다섯 개 금색 별 (방 쪽을 보게 비스듬히)
+    for (let i = 0; i < 10; i++) {
+      const a = Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? 0.13 : 0.32;
+      i ? sh.lineTo(Math.cos(a) * r, Math.sin(a) * r) : sh.moveTo(Math.cos(a) * r, Math.sin(a) * r);
+    }
+    const sg = new THREE.ExtrudeGeometry(sh, { depth: 0.1, bevelEnabled: false }); sg.translate(0, 0, -0.05);
+    const st = new THREE.Mesh(sg, star); st.position.set(cx, 3.88, cz); st.rotation.y = Math.PI / 4; st.castShadow = true; room.add(st);
+    hot.star = star;
   }
 
-  // ───────── 싱크대 (뒷벽, 세탁실 샷시에 거의 붙여서) — 문 세 짝짜리 흰색 하부장 (손잡이 없음) + 상판 + 개수대 + 은색 수전 ─────────
+  // ───────── 레트로 냉장고 (싱크대 왼쪽) — 사진 참고: 크림색, 위 모서리 둥글게, 위 1/3 냉동실 + 아래 냉장실, 문 사이 틈 근처에 가로 크롬 손잡이 둘, 위에 작은 화분 ─────────
+  {
+    const x0 = 15.85, z0 = 0.1, w = 1.35, d = 1.1, h = 2.95, r = 0.3, CREAM = "#efe6cf", GAP = "#cfc3a6";
+    const chrome = new THREE.MeshStandardMaterial({ color: "#dfe2e6", metalness: 0.75, roughness: 0.18 });
+    const shape = (W, H, R) => {                           // 앞에서 본 모양: 위 두 모서리가 둥근 네모
+      const s = new THREE.Shape();
+      s.moveTo(0, 0); s.lineTo(W, 0); s.lineTo(W, H - R); s.quadraticCurveTo(W, H, W - R, H); s.lineTo(R, H); s.quadraticCurveTo(0, H, 0, H - R); s.closePath();
+      return s;
+    };
+    const y0 = 0.08;
+    for (const lx of [x0 + 0.12, x0 + w - 0.2]) for (const lz of [z0 + 0.12, z0 + d - 0.2]) box(room, lx, 0, lz, 0.08, y0, 0.08, "#9a9ea5");   // 짧은 다리
+    const body = new THREE.Mesh(new THREE.ExtrudeGeometry(shape(w, h, r), { depth: d, bevelEnabled: false, curveSegments: 10 }), new THREE.MeshStandardMaterial({ color: CREAM, roughness: 0.35 }));
+    body.position.set(x0, y0, z0); body.castShadow = body.receiveShadow = true; room.add(body);
+    const split = y0 + h * 0.66;                           // 냉동실(위) / 냉장실(아래) 틈
+    box(room, x0 + 0.03, split, z0 + d, w - 0.06, 0.03, 0.012, GAP, false);
+    box(room, x0 + 0.03, y0 + 0.05, z0 + d, w - 0.06, 0.02, 0.012, GAP, false);   // 아래 틈
+    for (const hy of [split + 0.14, split - 0.2]) {        // 가로 크롬 손잡이 (틈 위·아래, 왼쪽으로 치우쳐)
+      box(room, x0 + 0.28, hy, z0 + d + 0.035, 0.5, 0.06, 0.05, "#dfe2e6").material = chrome;
+      for (const ex of [x0 + 0.3, x0 + 0.72]) box(room, ex, hy, z0 + d, 0.05, 0.06, 0.04, "#dfe2e6").material = chrome;
+    }
+    for (let i = 0; i < 5; i++) box(room, x0 + 0.38 + i * 0.13, split + 0.62, z0 + d + 0.003, 0.07, 0.08, 0.01, "#c9bfa6", false);   // 냉동실 문 위쪽 작은 로고 자리 (글자 대신 점 다섯 개)
+    // 냉장고 위 작은 화분 (사진 느낌): 테라코타 화분 + 큰 잎 몇 장
+    const px = x0 + 0.85, pz = z0 + 0.5, top = y0 + h;
+    tbox(room, px - 0.17, top, pz - 0.17, 0.34, 0.28, 0.34, "#b9714a", "wood");
+    box(room, px - 0.19, top + 0.26, pz - 0.19, 0.38, 0.05, 0.38, "#a8643f");
+    for (const [lx, ly, lz, sx, sy, sz, c] of [[-0.35, 0.45, -0.1, 0.36, 0.08, 0.3, "#3f7a4a"], [0.05, 0.6, 0.0, 0.34, 0.08, 0.32, "#4e8d58"], [-0.1, 0.78, -0.2, 0.3, 0.08, 0.28, "#3a7044"], [0.15, 0.4, -0.25, 0.3, 0.07, 0.26, "#5a9a62"], [-0.3, 0.68, 0.12, 0.28, 0.07, 0.26, "#4e8d58"]])
+      tbox(room, px + lx, top + ly, pz + lz, sx, sy, sz, c, "leaf");
+    for (const [lx, lz, hh] of [[-0.2, -0.02, 0.45], [0.12, 0.08, 0.6], [-0.02, -0.12, 0.78], [0.22, -0.15, 0.4], [-0.18, 0.18, 0.68]])
+      box(room, px + lx, top + 0.28, pz + lz, 0.03, hh - 0.28, 0.03, "#5e7d45", false);   // 잎 줄기
+  }
+
+  // ───────── 싱크대 (뒷벽, 세탁실 샷시에 거의 붙여서) — 문 세 짝짜리 흰색 하부장 (손잡이 없음) + 상판 + 왼쪽 싱크볼·은색 수전 + 오른쪽 가스레인지·빨간 냄비 ─────────
   {
     const w = 3.0, x0 = 20.45 - w, z0 = 0.1, d = 1.15, h = 1.8, WH = "#f7f6f2", LINE = "#dedbd3";
     const steel = new THREE.MeshStandardMaterial({ color: "#c9cdd2", metalness: 0.55, roughness: 0.3 });
     box(room, x0 + 0.06, 0, z0 + 0.06, w - 0.12, 0.12, d - 0.16, "#cfccc4");            // 걸레받이 (살짝 들어감)
-    box(room, x0, 0.12, z0, w, h - 0.22, d, WH);                                         // 흰 하부장
+    // 싱크볼 자리(bx·bz·bw·bd)만 비워 두고 하부장 윗부분과 상판을 네 조각으로 둘러, 진짜 움푹 들어간 싱크볼이 보이게
+    const bx = x0 + 0.25, bz = z0 + 0.25, bw = 1.0, bd = 0.65, bh = 0.4, top = h - 0.1;   // bh = 싱크볼 깊이
+    const ring = (y, hh, color, ox = 0, of = 0) => {                                     // 싱크볼 둘레 네 조각 (ox: 양옆 튀어나옴, of: 앞 튀어나옴)
+      box(room, x0 - ox, y, z0, bx - x0 + ox, hh, d + of, color);                        // 왼쪽
+      box(room, bx + bw, y, z0, x0 + w - bx - bw + ox, hh, d + of, color);               // 오른쪽
+      box(room, bx, y, z0, bw, hh, bz - z0, color);                                      // 뒤
+      box(room, bx, y, bz + bd, bw, hh, z0 + d + of - bz - bd, color);                   // 앞
+    };
+    box(room, x0, 0.12, z0, w, top - bh - 0.12, d, WH);                                  // 흰 하부장 (싱크볼 아래까지)
+    ring(top - bh, bh, WH);                                                              //  └ 윗부분 (싱크볼 둘레)
     for (const k of [1, 2]) box(room, x0 + w * k / 3 - 0.01, 0.2, z0 + d, 0.02, h - 0.4, 0.01, LINE, false);   // 문 세 짝 사이 선 (손잡이 없는 민무늬 문)
-    box(room, x0 - 0.03, h - 0.1, z0, w + 0.06, 0.1, d + 0.05, "#fbfaf7");              // 흰 상판
-    box(room, x0 + 0.75, h - 0.09, z0 + 0.22, 1.0, 0.02, 0.7, "#b9bdc2", false);          // 개수대 (움푹한 스테인리스)
-    box(room, x0 + 0.8, h - 0.08, z0 + 0.27, 0.9, 0.02, 0.6, "#9ea3a9", false);
-    box(room, x0 + 1.18, h, z0 + 0.08, 0.14, 0.12, 0.14, "#c9cdd2").material = steel;   // 수전: 받침 + 기둥 + 꺾인 주둥이
-    box(room, x0 + 1.21, h + 0.12, z0 + 0.11, 0.08, 0.6, 0.08, "#c9cdd2").material = steel;
-    box(room, x0 + 1.21, h + 0.66, z0 + 0.11, 0.08, 0.08, 0.38, "#c9cdd2").material = steel;
-    box(room, x0 + 1.35, h + 0.12, z0 + 0.12, 0.12, 0.05, 0.05, "#c9cdd2").material = steel;   // 레버
-    box(room, x0 + 1.95, h, z0 + 0.25, 0.22, 0.32, 0.22, "#f1e8d4");                     // 작은 세제 병 + 스펀지
-    box(room, x0 + 2.02, h + 0.32, z0 + 0.32, 0.08, 0.08, 0.08, "#7fae7e");
-    box(room, x0 + 1.9, h, z0 + 0.62, 0.32, 0.1, 0.2, "#e9c766");
+    ring(top, 0.1, "#fbfaf7", 0.03, 0.05);                                               // 흰 상판
+    // 스테인리스 싱크볼: 안쪽 네 벽 + 바닥 + 배수구 + 위 테두리
+    const sinkIn = new THREE.MeshStandardMaterial({ color: "#aeb3b9", metalness: 0.6, roughness: 0.35 });
+    const t = 0.03, wy = top - bh;
+    for (const [px, pz, sw, sd] of [[bx, bz, t, bd], [bx + bw - t, bz, t, bd], [bx, bz, bw, t], [bx, bz + bd - t, bw, t]])
+      box(room, px, wy, pz, sw, bh + 0.1, sd, "#aeb3b9", false).material = sinkIn;
+    box(room, bx, wy, bz, bw, 0.03, bd, "#9ea3a9", false).material = sinkIn;            // 바닥
+    const drain = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.01, 18), mat("#4a4e54"));
+    drain.position.set(bx + bw / 2, wy + 0.035, bz + bd / 2); room.add(drain);            // 배수구
+    for (const [px, pz, sw, sd] of [[bx - 0.04, bz - 0.04, bw + 0.08, 0.04], [bx - 0.04, bz + bd, bw + 0.08, 0.04], [bx - 0.04, bz, 0.04, bd], [bx + bw, bz, 0.04, bd]])
+      box(room, px, h, pz, sw, 0.012, sd, "#c9cdd2", false).material = steel;           // 위 테두리 (얇은 은색 테)
+    box(room, x0 + 0.68, h, z0 + 0.08, 0.14, 0.12, 0.14, "#c9cdd2").material = steel;   // 수전: 받침 + 기둥 + 꺾인 주둥이
+    box(room, x0 + 0.71, h + 0.12, z0 + 0.11, 0.08, 0.6, 0.08, "#c9cdd2").material = steel;
+    box(room, x0 + 0.71, h + 0.66, z0 + 0.11, 0.08, 0.08, 0.38, "#c9cdd2").material = steel;
+    box(room, x0 + 0.85, h + 0.12, z0 + 0.12, 0.12, 0.05, 0.05, "#c9cdd2").material = steel;   // 레버
+    // 가스레인지 (상판 오른쪽): 까만 상판 + 화구 두 개(버너 링·뚜껑·무쇠 받침살) + 앞쪽 손잡이 다이얼
+    const gx = x0 + 1.6, gw = 1.25, gz = z0 + 0.15, gd = 0.85, BLK = "#24221f";
+    box(room, gx, h, gz, gw, 0.04, gd, BLK);
+    const burners = [gx + 0.32, gx + gw - 0.32], bzc = gz + gd / 2;
+    for (const bxc of burners) {
+      const ringB = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.025, 6, 20), mat("#55524d")); ringB.rotation.x = Math.PI / 2; ringB.position.set(bxc, h + 0.05, bzc); room.add(ringB);
+      const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.03, 16), mat("#3a3835")); cap.position.set(bxc, h + 0.06, bzc); room.add(cap);
+      for (const a of [0, Math.PI / 2]) {                  // 무쇠 받침살 (십자)
+        const bar = box(room, -0.22, 0, -0.015, 0.44, 0.03, 0.03, "#111", false); bar.position.set(bxc, h + 0.1, bzc); bar.rotation.y = a;
+      }
+      const knob = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.05, 14), mat("#2f2d2a"));
+      knob.rotation.x = Math.PI / 2; knob.position.set(bxc, h - 0.2, z0 + d + 0.025); room.add(knob);   // 앞쪽 다이얼
+      box(room, bxc - 0.01, h - 0.17, z0 + d + 0.05, 0.02, 0.04, 0.01, "#d9d4c8", false);
+    }
+    // 빨간 냄비 (왼쪽 화구 위): 몸통 + 뚜껑 + 뚜껑 손잡이 + 양옆 손잡이
+    const potX = burners[0], potY = h + 0.115, RED = "#d23f33";
+    const pot = new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.18, 0.24, 24), mat(RED)); pot.position.set(potX, potY + 0.12, bzc); pot.castShadow = true; room.add(pot);
+    const lid = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.03, 24), mat("#c23a2f")); lid.position.set(potX, potY + 0.255, bzc); room.add(lid);
+    const lidK = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.05, 0.05, 12), mat("#2f2d2a")); lidK.position.set(potX, potY + 0.295, bzc); room.add(lidK);
+    for (const sx of [-1, 1]) box(room, potX + sx * 0.2 - (sx < 0 ? 0.08 : 0), potY + 0.17, bzc - 0.05, 0.08, 0.04, 0.1, RED);
   }
 
   // ───────── 식탁 (오른쪽 앞 빈 자리, 세탁실 샷시 선을 안 넘게) — 아이보리 러그 + 원목 사각 식탁 가로로 + 검은 곡목 의자 4개 (긴 쪽 양옆에 2개씩) ─────────
@@ -760,28 +991,76 @@ const PHOTO = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBMRXhpZgAATU
     }
   }
 
-  // ───────── 세탁실 (칸막이 벽 오른쪽, 오른쪽 창 옆 구석) — 아래 세탁기, 위에 건조기 ─────────
+  // ───────── 세탁실 (칸막이 벽 오른쪽, 오른쪽 창 옆 구석) — 아래 세탁기, 위에 건조기. 문은 오른쪽 경첩으로 열림 (카메라 쪽으로 열려서 잘 보이게) (누르면 톰슨이 빨래) ─────────
   {
     const x0 = 22.55, z0 = 0.12, w = 1.4, d = 1.4, WH = "#f4f3ef", PANEL = "#e2e0da";
     const steel = new THREE.MeshStandardMaterial({ color: "#c9cdd2", metalness: 0.45, roughness: 0.35 });
-    const glass = new THREE.MeshStandardMaterial({ color: "#7d9bb5", roughness: 0.2, metalness: 0.1 });
-    const unit = (y0, h, dryer) => {                       // 흰 몸통 + 위 조작판 + 둥근 문
+    const unit = (y0, h, dryer) => {                       // 흰 몸통 + 위 조작판 + 안쪽 드럼 + 둥근 문(테 + 반투명 유리 + 손잡이)
+      const room = group(ROOM);
       box(room, x0, y0, z0, w, h, d, WH);
       box(room, x0 + 0.05, y0 + h - 0.32, z0 + d, w - 0.1, 0.26, 0.03, PANEL);   // 조작판
       box(room, x0 + 0.12, y0 + h - 0.26, z0 + d + 0.02, 0.4, 0.14, 0.02, "#3a3f46", false);   // 작은 화면
       const knob = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.06, 16), steel);
       knob.rotation.x = Math.PI / 2; knob.position.set(x0 + w - 0.28, y0 + h - 0.19, z0 + d + 0.04); room.add(knob);
-      const cy = y0 + (h - 0.32) / 2, cx = x0 + w / 2;
-      const rim = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.48, 0.06, 32), dryer ? mat("#dcdad4") : steel);   // 문 테
-      rim.rotation.x = Math.PI / 2; rim.position.set(cx, cy, z0 + d + 0.03); rim.castShadow = true; room.add(rim);
-      const win = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.36, 0.04, 32), dryer ? mat("#3a3f46") : glass);   // 유리창
-      win.rotation.x = Math.PI / 2; win.position.set(cx, cy, z0 + d + 0.05); room.add(win);
-      box(room, cx + 0.42, cy - 0.1, z0 + d + 0.04, 0.06, 0.2, 0.05, "#bfc3c8");   // 문 손잡이
+      const cy = y0 + (h - 0.32) / 2, cx = x0 + w / 2, zf = z0 + d;
+      const drum = new THREE.Mesh(new THREE.CircleGeometry(0.4, 32), mat("#3b4046"));   // 안쪽 드럼 (어두운 원)
+      drum.position.set(cx, cy, zf + 0.004); room.add(drum);
+      const door = group(room, cx + 0.48, cy, zf);         // 경첩 = 문 오른쪽 끝
+      const rim = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.065, 10, 32), dryer ? mat("#dcdad4") : steel);
+      rim.position.set(-0.48, 0, 0.05); rim.castShadow = true; door.add(rim);
+      const glass = new THREE.MeshStandardMaterial({ color: dryer ? "#9aa0a8" : "#9cc0dc", roughness: 0.15, metalness: 0.1, transparent: true, opacity: dryer ? 0.45 : 0.35, depthWrite: false });
+      const win = new THREE.Mesh(new THREE.CircleGeometry(0.38, 32), glass); win.position.set(-0.48, 0, 0.055); door.add(win);
+      box(door, -0.48 - 0.44, -0.1, 0.03, 0.06, 0.2, 0.06, "#bfc3c8");            // 문 손잡이 (왼쪽)
+      return { g: room, door, drum: { x: cx, y: cy, z: zf + 0.02 } };
     };
     for (const fx of [x0 + 0.1, x0 + w - 0.2]) for (const fz of [z0 + 0.1, z0 + d - 0.2]) box(room, fx, 0, fz, 0.1, 0.06, 0.1, "#9a9ea5");   // 받침 발
-    unit(0.06, 1.9, false);                                // 아래: 세탁기
+    hot.washer = unit(0.06, 1.9, false);                   // 아래: 세탁기
     box(room, x0 + 0.03, 1.96, z0 + 0.03, w - 0.06, 0.06, d - 0.06, "#cfccc4");   // 사이 고정 판
-    unit(2.02, 1.75, true);                                // 위: 건조기
+    hot.dryer = unit(2.02, 1.75, true);                    // 위: 건조기
+
+    // 연두색 오발형 빨래 바구니 (세탁실 창 아래 바닥) + 빨래 다섯 장
+    const spot = new THREE.Vector3(21.5, 0, 0.6);
+    const bg = group(room, spot.x, 0, spot.z), ov = group(bg); ov.scale.set(1.25, 1, 0.95);
+    const LIME = new THREE.MeshStandardMaterial({ color: "#a9d46b", roughness: 0.7, side: THREE.DoubleSide });
+    const wall = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.4, 0.45, 28, 1, true), LIME); wall.position.y = 0.245; wall.castShadow = true; ov.add(wall);
+    const bottom = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.03, 28), LIME); bottom.position.y = 0.035; ov.add(bottom);
+    const lip = new THREE.Mesh(new THREE.TorusGeometry(0.45, 0.035, 8, 28), mat("#97c45a")); lip.rotation.x = Math.PI / 2; lip.position.y = 0.47; ov.add(lip);
+    for (const sx of [-1, 1]) box(bg, sx * 0.55 - 0.05, 0.3, -0.12, 0.1, 0.1, 0.24, "#7fae45");   // 양옆 손잡이 구멍 자리
+    hot.basket = { g: bg, spot };
+    const CLOTH = ["#f7f7f2", "#7fa6d9", "#f2a6b5", "#f1d36b", "#9aa0a8"];
+    const inBasket = [[-0.25, 0.36, -0.05, 0.3], [0.05, 0.38, 0.1, -0.4], [0.28, 0.35, -0.08, 0.8], [-0.05, 0.47, -0.12, 1.2], [0.15, 0.49, 0.12, -1.0]];
+    const inDrum = [[-0.15, -0.12, 0.4], [0.13, -0.14, -0.6], [0, -0.01, 1.1], [-0.12, 0.11, -0.2], [0.14, 0.08, 0.9]];
+    hot.clothes = CLOTH.map(c => { const m = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.12, 0.22), mat(c)); m.castShadow = true; return m; });
+    hot.laundry = "basket";                                // 빨래가 지금 어디 있나: basket · washer · dryer
+    // where 자리에 i 번째 빨래를 놓을 때의 (방 기준) 위치·회전·두께
+    hot.slotWorld = (where, i) => {
+      if (where === "basket") {
+        const [lx, ly, lz, ry] = inBasket[i];
+        bg.updateWorldMatrix(true, false);
+        const q = bg.getWorldQuaternion(new THREE.Quaternion()).multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0, ry, 0)));
+        return { pos: bg.localToWorld(new THREE.Vector3(lx, ly, lz)), q, sz: 1 };
+      }
+      const dm = hot[where].drum, [ox, oy, rz] = inDrum[i];
+      return { pos: new THREE.Vector3(dm.x + ox, dm.y + oy, dm.z), q: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, rz)), sz: 0.12 };
+    };
+    hot.spinCloth = (where, ang) => {                      // 드럼 속 빨래를 ang 만큼 빙글 돌려 놓기 (돌아가는 중)
+      const dm = hot[where].drum;
+      hot.clothes.forEach((m, i) => {
+        const [ox, oy, rz] = inDrum[i], c = Math.cos(ang), s = Math.sin(ang);
+        m.position.set(dm.x + ox * c - oy * s, dm.y + ox * s + oy * c, dm.z); m.rotation.set(0, 0, rz + ang);
+      });
+    };
+    hot.placeCloth = (i, where) => {                       // 그 자리에 딱 놓기 (바구니면 바구니에 붙여서 같이 움직이게)
+      const m = hot.clothes[i];
+      if (where === "basket") {
+        const [lx, ly, lz, ry] = inBasket[i];
+        bg.add(m); m.position.set(lx, ly, lz); m.rotation.set(0, ry, 0); m.scale.set(1, 1, 1);
+      } else {
+        const sw = hot.slotWorld(where, i);
+        ROOM.add(m); m.position.copy(sw.pos); m.quaternion.copy(sw.q); m.scale.set(1, 1, sw.sz);
+      }
+    };
+    hot.clothes.forEach((_, i) => hot.placeCloth(i, "basket"));
   }
 
 }
@@ -877,13 +1156,276 @@ function makeThomson() {             // 톰슨 = 여우
   return { root, tail, top: 2.65 };
 }
 
-const gazelle = makeGazelle(), thomson = makeThomson();
+// ── 사람 버전 (나 = 땋은 머리 여자, 신랑 = 남자) — 귀여운 2등신 복셀. 블록 0.1 크기, 얼굴은 +z 쪽 ──
+const SKIN = "#f6d7c3", CHEEK = "#f3b0aa";
+function personBase(o) {             // 몸·팔·다리·머리(얼굴)까지 공통. o: legH 다리 길이, shirt·shirt2·pants·shoe 색, stripe 줄무늬 색, skirt 짧은 치마, female 속눈썹(아니면 눈썹), brow 눈썹 색
+  const root = group(room), s = group(root); s.scale.setScalar(0.12);
+  const L = o.legH, T0 = L, T1 = L + 6.5, H0 = T1 + 1;     // T0~T1 몸통, H0 = 머리 아래
+  // 다리: 엉덩이(hip)에서 앞뒤로 흔들리고, 무릎(knee)에서 뒤로 꺾임. 허벅지는 hip 묶음, 정강이·신발은 knee 묶음
+  const legs = [];
+  const leg = (cx, hipY, kneeY, thigh, shin) => {          // cx: 다리 가운데, thigh(l, 무릎까지 높이)·shin(k, 무릎 높이) 이 모양을 그림
+    const hip = group(s, cx, hipY, 0), knee = group(hip, 0, kneeY - hipY, 0);
+    thigh(hip, hipY - kneeY); shin(knee, kneeY);
+    hip.userData.knee = knee; legs.push(hip);
+  };
+  if (o.skirt) {                                           // 무릎 위 A라인 주름치마 + 맨다리 + 구두
+    for (const cx of [-1.3, 1.3]) leg(cx, 3.5, 2.2,
+      (l, th) => box(l, -0.9, -th, -0.8, 1.8, th, 1.6, SKIN),
+      (k, kn) => { box(k, -0.9, -(kn - 0.9), -0.8, 1.8, kn - 0.9, 1.6, SKIN); box(k, -1.05, -kn, -1.0, 2.1, 0.9, 2.8, o.shoe); });
+    box(s, -3.4, 4.3, -2.1, 6.8, T0 - 4.3 + 0.2, 4.2, o.pants);                  // 허리 쪽 (좁게)
+    box(s, -3.9, 3.0, -2.5, 7.8, 1.4, 5.0, o.pants);                             // 아래로 퍼지는 자락
+    for (const px of [-3.0, -1.3, 0.4, 2.1]) box(s, px, 3.0, 2.5, 0.35, 1.4, 0.06, o.pants2, false);   // 주름선 (앞)
+    for (const px of [-3.0, -1.3, 0.4, 2.1]) box(s, px, 3.0, -2.56, 0.35, 1.4, 0.06, o.pants2, false); // 주름선 (뒤)
+  } else {                                                 // 청바지 + 운동화
+    const kneeY = 1 + (L - 1) / 2;
+    for (const cx of [-1.5, 1.5]) leg(cx, L - 0.3, kneeY,
+      (l, th) => { box(l, -1.2, -th, -1.1, 2.4, th + 0.3, 2.2, o.pants); box(l, -0.1, -th, 1.12, 0.2, th, 0.05, o.pants2, false); },   // 허벅지 + 박음질 선
+      (k, kn) => {
+        box(k, -1.2, -(kn - 1), -1.1, 2.4, kn - 1, 2.2, o.pants);                      // 정강이
+        box(k, -0.1, -(kn - 1.7), 1.12, 0.2, kn - 1.7, 0.05, o.pants2, false);
+        box(k, -1.25, -(kn - 1), -1.15, 2.5, 0.7, 2.3, o.pants2);                       // 접어 올린 밑단
+        box(k, -1.3, -kn, -1.3, 2.6, 1.1, 3.4, o.shoe); box(k, -1.3, -kn, 1.6, 2.6, 0.4, 0.5, "#e8e4dc");
+      });
+    box(s, -3.0, L - 0.6, -1.15, 6.0, 0.6, 2.3, o.pants2);                       // 허리
+  }
+  const sw = o.wide ? 4 : 3.5;                             // 어깨 반폭
+  box(s, -sw, T0, -2, sw * 2, T1 - T0, 4, o.shirt);        // 몸통
+  box(s, -sw - 0.05, T0, -2.05, sw * 2 + 0.1, 0.8, 4.1, o.shirt2);   // 밑단
+  if (o.stripe) for (let y = T0 + 1.5; y < T1 - 0.5; y += 1.3) box(s, -sw - 0.04, y, -2.04, sw * 2 + 0.08, 0.45, 4.08, o.stripe);   // 가로 줄무늬
+  box(s, -1.6, T1 - 0.6, 1.95, 3.2, 0.6, 0.2, o.shirt2, false);      // 목둘레
+  box(s, -1, T1, -1, 2, 1, 2, SKIN);                       // 목
+  const arms = [];
+  for (const side of [-1, 1]) {                            // 팔 (어깨에서 흔들림)
+    const a = group(s, side * (sw + 0.8), T1 - 0.4, 0);
+    box(a, -0.8, -5.2, -0.95, 1.6, 5.4, 1.9, o.shirt);
+    if (o.stripe) for (let y = -1.2; y > -4.6; y -= 1.3) box(a, -0.84, y, -0.99, 1.68, 0.45, 1.98, o.stripe);
+    box(a, -0.85, -5.2, -1.0, 1.7, 0.7, 2.0, o.shirt2);   // 소매 끝
+    box(a, -0.7, -6.4, -0.8, 1.4, 1.2, 1.6, SKIN);         // 손
+    arms.push(a);
+  }
+  const head = group(s, 0, H0, 0);                         // 큰 머리 (얼굴 앞면 z = 4.5)
+  box(head, -5, 0, -4.5, 10, 10, 9, SKIN);
+  box(head, -5.4, 3.2, -0.8, 0.4, 2, 1.6, SKIN);           // 귀
+  box(head, 5, 3.2, -0.8, 0.4, 2, 1.6, SKIN);
+  // 얼굴: 동그란 까만 눈 + 반짝이 + 볼터치 + 웃는 입 (단순하게)
+  for (const ex of [-3.1, 1.7]) {
+    box(head, ex, 3.2, 4.5, 1.4, 2, 0.3, INK);
+    box(head, ex + 0.3, 4.5, 4.75, 0.5, 0.5, 0.1, "#ffffff", false);
+  }
+  box(head, -4.3, 2.3, 4.5, 1.6, 0.9, 0.2, CHEEK, false);  // 볼
+  box(head, 2.7, 2.3, 4.5, 1.6, 0.9, 0.2, CHEEK, false);
+  box(head, -0.7, 1.6, 4.5, 1.4, 0.35, 0.2, "#c46a6a", false);   // 웃는 입
+  if (o.female) {                                          // 속눈썹
+    box(head, -3.1, 5.4, 4.5, 1.6, 0.3, 0.2, INK, false);
+    box(head, 1.5, 5.4, 4.5, 1.6, 0.3, 0.2, INK, false);
+  } else {                                                 // 눈썹
+    box(head, -3.3, 5.6, 4.5, 1.8, 0.45, 0.2, o.brow || INK, false);
+    box(head, 1.5, 5.6, 4.5, 1.8, 0.45, 0.2, o.brow || INK, false);
+  }
+  const walkLegs = (p, t) => {                             // 걸을 때 다리 번갈아 + 앞으로 내딛는 다리의 무릎 꺾기. p.sit: chair 의자·소파 / floor 바닥(다리 뻗고)
+    legs.forEach((hip, i) => {
+      const ph = t * 10 + i * Math.PI, sw = p.walking ? Math.sin(ph) : 0;
+      let hx = -sw * 0.55, kx = p.walking ? Math.max(0, Math.cos(ph)) * 0.9 : 0;   // 음수 hx = 발이 앞으로, 양수 kx = 무릎이 뒤로 꺾임
+      if (p.sit === "chair") { hx = -1.5; kx = 1.45 + Math.sin(t * 2 + i) * 0.08; }    // 의자: 허벅지 앞으로, 정강이 아래로 (발 살랑)
+      else if (p.sit === "floor") { hx = -1.5; kx = 0.15; }                           // 바닥: 다리 쭉 뻗고
+      hip.rotation.x += (hx - hip.rotation.x) * 0.25;
+      hip.userData.knee.rotation.x += (kx - hip.userData.knee.rotation.x) * 0.25;
+    });
+  };
+  const armsPose = (p, t, ph = 0) => {                     // 팔: carry 바구니 / load 빨래 / reach 문 / play 고양이랑 놀기 / 걷기 / 가만히
+    const [a0, a1] = arms;
+    if (p.pose === "carry") { a0.rotation.x = a1.rotation.x = -0.75; }
+    else if (p.pose === "load") { a0.rotation.x = -1.3 + Math.sin(t * 9) * 0.35; a1.rotation.x = -1.3 - Math.sin(t * 9) * 0.35; }
+    else if (p.pose === "reach") { a0.rotation.x = -0.2; a1.rotation.x = -1.5; }
+    else if (p.pose === "play") { a0.rotation.x = -0.3; a1.rotation.x = -1.2 + Math.sin(t * 6) * 0.45; }   // 한 손으로 살랑살랑
+    else if (p.walking) { a0.rotation.x = Math.sin(t * 10) * 0.5; a1.rotation.x = -Math.sin(t * 10) * 0.5; }
+    else { a0.rotation.x = Math.sin(t * 1.5 + ph) * 0.1 - (p.sit ? 0.5 : 0); a1.rotation.x = -Math.sin(t * 1.5 + ph) * 0.1 - (p.sit ? 0.5 : 0); }
+  };
+  return { root, s, head, arms, legs, walkLegs, armsPose, hipY: (o.skirt ? 3.5 : L - 0.3) * 0.12, top: (H0 + 11) * 0.12 };
+}
+
+function makeWoman() {               // 나: 갈색 머리를 하나로 땋아 어깨 앞으로 + 보라 니트 + 하늘색 주름 미니스커트 + 골드 귀걸이
+  const p = personBase({ legH: 5.5, shirt: "#a58bd0", shirt2: "#8d72bc", pants: "#a9c2de", pants2: "#8eaacb", shoe: "#8a5a3c", skirt: true, female: true });
+  const h = p.head, HR = "#4a2f24", HD = "#3a241c";
+  box(h, -5.5, 7.6, -5, 11, 3, 10, HR);                    // 정수리
+  box(h, -5.5, 1.5, -5, 11, 7, 2.6, HR);                   // 뒷머리
+  box(h, -5.5, 2.5, -3, 0.6, 6.5, 5.5, HR);                // 옆머리 (귀 덮게)
+  box(h, 4.9, 2.5, -3, 0.6, 6.5, 5.5, HR);
+  box(h, -5, 7.2, 4.4, 4.2, 1.6, 0.6, HR);                 // 앞머리 (가르마 오른쪽으로 흘러내림)
+  box(h, -0.8, 7.6, 4.4, 5.8, 1.2, 0.6, HR);
+  box(h, 3.6, 6.4, 4.4, 1.4, 2.4, 0.6, HR);
+  box(h, -5, 8.4, 4.4, 10, 0.8, 0.6, HD);
+  box(h, 5.2, 2.6, 0, 0.4, 0.6, 0.6, "#e9c766");           // 골드 귀걸이 (가젤의 코코링 색)
+  box(h, -5.6, 2.6, 0, 0.4, 0.6, 0.6, "#e9c766");
+  // 땋은 머리: 귀 뒤에서 시작해 어깨 앞으로 (가슴 위까지만 오는 길이, 마디마다 좌우로 엇갈려 땋은 느낌)
+  const braid = group(h, 4.2, 2.2, 0.8);
+  for (let i = 0; i < 4; i++) {
+    const w = 2.4 - i * 0.1, off = i % 2 ? 0.35 : -0.35;
+    box(braid, -w / 2 + off, -(i + 1) * 1.45, -w / 2 + i * 0.32, w, 1.6, w, i % 2 ? HD : HR);
+  }
+  box(braid, -0.7, -6.9, 0.5, 1.4, 0.8, 1.4, "#f08aa5");   // 분홍 머리끈
+  box(braid, -0.9, -8.2, 0.4, 1.8, 1.3, 1.6, HR);          // 끝 꼬리
+  braid.rotation.z = 0.08;
+  p.anim = (t) => {
+    p.walkLegs(p, t); p.armsPose(p, t, 0);
+    braid.rotation.z = 0.08 + Math.sin(t * 2.2) * 0.07;    // 땋은 머리 살랑
+    h.rotation.z = Math.sin(t * 1.3) * 0.04;
+  };
+  return p;
+}
+
+function makeMan() {                 // 신랑: 짧은 검은 머리(5:5 가르마) + 흰 바탕 네이비 줄무늬 티 + 청바지 + 흰 운동화 + 은색 손목시계
+  const p = personBase({ legH: 7, shirt: "#f7f6f2", shirt2: "#2c3a5e", stripe: "#2c3a5e", pants: "#5b7fb1", pants2: "#4a6a99", shoe: "#f4f2ee", wide: true, brow: "#221c1e" });
+  const h = p.head, HR = "#221c1e", HD = "#2f282a";
+  box(h, -5.4, 8.6, -5, 10.8, 2.0, 9.4, HR);               // 정수리
+  box(h, -5.4, 3, -5, 10.8, 5.8, 2.2, HR);                 // 뒷머리 (짧게)
+  box(h, -5.4, 5, -3, 0.5, 3.8, 7.4, HR);                  // 옆머리 (짧게)
+  box(h, 4.9, 5, -3, 0.5, 3.8, 7.4, HR);
+  // 5:5 앞머리: 가운데 가르마에서 양옆으로 커튼처럼 갈라져 내려옴 (가운데 틈으로 이마가 살짝 보임)
+  for (const side of [-1, 1]) {
+    box(h, side < 0 ? -3.6 : 0.4, 7.8, 4.4, 3.2, 2.6, 0.7, HR);   // 가르마 쪽 (높게)
+    box(h, side < 0 ? -5.1 : 3.4, 6.9, 4.4, 1.7, 3.0, 0.7, HR);   // 바깥쪽 (길게 내려옴)
+    box(h, side < 0 ? -2.6 : 0.6, 9.6, 3.2, 2.0, 1.0, 1.6, HD);   // 가르마 양옆 볼륨
+  }
+  box(p.arms[0], -0.95, -5.0, -1.05, 1.9, 0.5, 2.1, "#c9cdd2");   // 은색 손목시계 (왼손목)
+  box(p.arms[0], -0.2, -4.95, 1.0, 0.5, 0.45, 0.15, "#f7f7f7", false);
+  p.anim = (t) => {                                        // p.pose: carry 바구니 들기 / load 빨래 넣고 꺼내기 / reach 문 열기, p.walking 걷는 중
+    p.walkLegs(p, t); p.armsPose(p, t, 1);
+    h.rotation.x = Math.sin(t * 1.1) * 0.04;
+  };
+  return p;
+}
+
+const HUMAN = true;                  // true = 사람 버전, false = 원래 동물 버전(가젤 토끼·톰슨 여우)
+const gazelle = HUMAN ? makeWoman() : makeGazelle(), thomson = HUMAN ? makeMan() : makeThomson();
+if (!HUMAN) {
+  gazelle.anim = (t) => {
+    gazelle.ears[0].rotation.x = Math.max(0, Math.sin(t * 2.7)) * -0.25;
+    gazelle.ears[1].rotation.x = Math.max(0, Math.sin(t * 2.7 + 2)) * -0.2;
+  };
+  thomson.anim = (t) => { thomson.tail.rotation.z = -0.22 + Math.sin(t * 2.2) * 0.1; };
+}
 gazelle.root.position.set(6.7, 0.06, 7.0); gazelle.root.rotation.y = 0.95;
 thomson.root.position.set(9.5, 0.06, 7.0); thomson.root.rotation.y = 0.55;
 const chars = [
   { c: gazelle, tag: document.getElementById("tag-me"), hop: -1 },
   { c: thomson, tag: document.getElementById("tag-hus"), hop: -1 },
 ];
+
+// ── 톰슨 빨래하기: 세탁기 누르면 문 열고 → 바구니 들고 와서 → 빨래 넣고 → 문 닫고 바구니 제자리
+//    건조기 누르면 건조기 문·세탁기 문 열고 → 세탁기 빨래를 꺼내 건조기에 넣고 → 문 닫기. 끝나면 원래 자리로 ──
+// steps: 차례로 하는 일 목록. { walk:[x,z], face } 걸어가서 그쪽 보기 / { dur, start, fn(p), end } 시간 걸리는 일 / { fn } 바로 하는 일
+function runSteps(ch, steps) { if (ch.steps) return false; ch.steps = steps; ch.si = 0; ch.st = null; return true; }
+function updateSteps(ch, t, dt) {
+  if (!ch.steps) return;
+  const step = ch.steps[ch.si], root = ch.c.root;
+  if (ch.st === null) { ch.st = t; step.start?.(); }
+  const c = t - ch.st;
+  const turnTo = (ang, k) => { let d = ang - root.rotation.y; d = Math.atan2(Math.sin(d), Math.cos(d)); root.rotation.y += d * Math.min(1, k); return Math.abs(d); };
+  let done = false;
+  if (step.walk) {
+    const [gx, gz] = step.walk, dx = gx - root.position.x, dz = gz - root.position.z, d = Math.hypot(dx, dz);
+    if (d > 0.04) {
+      const turn = turnTo(Math.atan2(dx, dz), dt * 8);
+      const mv = Math.min(d, 2.6 * dt * (turn > 1 ? 0.3 : 1));
+      root.position.x += dx / d * mv; root.position.z += dz / d * mv; ch.c.walking = true;
+    } else { ch.c.walking = false; done = step.face == null || turnTo(step.face, dt * 8) < 0.05; }
+  } else if (step.dur != null) { step.fn?.(Math.min(1, c / step.dur), c); done = c >= step.dur; }
+  else { step.fn?.(); done = true; }
+  if (done) { step.end?.(); ch.si++; ch.st = null; if (ch.si >= ch.steps.length) ch.steps = null; }
+}
+const doorStep = (unit, open) => ({ dur: 0.5, start: () => { thomson.pose = "reach"; }, fn: p => { unit.door.rotation.y = 1.75 * ease(open ? p : 1 - p); }, end: () => { thomson.pose = null; } });
+function moveClothes(where) {                      // 빨래 다섯 장을 하나씩 폴짝 옮기기 (지금 자리 → where)
+  const from = [];
+  return { dur: 0.42 * 4 + 0.55,
+    start: () => { thomson.pose = "load"; hot.moving = true; hot.clothes.forEach(m => { room.attach(m); from.push({ p: m.position.clone(), q: m.quaternion.clone(), sz: m.scale.z }); }); },
+    fn: (p, c) => hot.clothes.forEach((m, i) => {
+      const q = ease((c - i * 0.42) / 0.55), to = hot.slotWorld(where, i), f = from[i];
+      m.position.lerpVectors(f.p, to.pos, q); m.position.y += Math.sin(q * Math.PI) * 0.35;
+      m.quaternion.slerpQuaternions(f.q, to.q, q); m.scale.z = f.sz + (to.sz - f.sz) * q;
+    }),
+    end: () => { hot.clothes.forEach((_, i) => hot.placeCloth(i, where)); hot.laundry = where; hot.moving = false; if (where !== "washer") hot.washAt = 0; thomson.pose = null; } };
+}
+function startLaundry(kind) {
+  const ch = chars[1], B = hot.basket;
+  const HALL = [21.6, 5.6], WS = [22.15, 2.35], BS = [21.5, 1.75], HOME = [9.5, 7.0];   // 샷시 끝 돌아가는 길목, 세탁기 앞(문 왼쪽 — 톰슨이 문을 안 가리게), 바구니 앞, 원래 자리
+  const FW = 2.76;                                                                      // 세탁기 문 쪽(오른쪽 앞) 보는 방향
+  const lift = (up) => {                           // 바구니 들기(up) / 내려놓기
+    let a, b;
+    return { dur: 0.45,
+      start: () => {
+        if (up) { thomson.pose = "carry"; thomson.root.attach(B.g); a = B.g.position.clone(); b = new THREE.Vector3(0, 0.55, 0.55); B.g.quaternion.identity(); }
+        else { room.attach(B.g); a = B.g.position.clone(); b = B.spot.clone(); B.g.rotation.set(0, 0, 0); }
+      },
+      fn: p => B.g.position.lerpVectors(a, b, ease(p)),
+      end: () => { if (!up) thomson.pose = null; } };
+  };
+  if (ch.busy) return;                             // 이미 빨래 중
+  const steps = kind === "wash" ? [
+    { fn: () => { if (hot.laundry !== "basket") hot.clothes.forEach((_, i) => hot.placeCloth(i, "basket")); hot.laundry = "basket"; } },   // 새 빨래거리
+    { walk: HALL }, { walk: WS, face: FW }, doorStep(hot.washer, true),
+    { walk: BS, face: Math.PI }, lift(true),
+    { walk: WS, face: FW }, moveClothes("washer"), { dur: 0.3 }, doorStep(hot.washer, false), { fn: () => { hot.washAt = Date.now(); } },   // 문 닫으면 세탁 시작
+    { walk: BS, face: Math.PI }, lift(false),
+    { walk: HALL }, { walk: HOME, face: 0.55 },
+  ] : [
+    { walk: HALL }, { walk: WS, face: FW }, doorStep(hot.dryer, true), doorStep(hot.washer, true),
+    hot.laundry === "washer" ? moveClothes("dryer") : { dur: 0.8 }, { dur: 0.3 },
+    doorStep(hot.washer, false), doorStep(hot.dryer, false), { fn: () => { if (hot.laundry === "dryer") hot.dryAt = Date.now(); } },   // 문 닫으면 건조 시작
+    { walk: HALL }, { walk: HOME, face: 0.55 },
+  ];
+  // 하던 일(앉아 있기 등)을 멈추고 일어나서 그 자리를 빠져나온 뒤 빨래하러 감. 끝나면 다시 자유롭게 돌아다님
+  ch.steps = [...leaveSteps(ch), { walk: HUBS[1] }, ...steps, { fn: () => { ch.busy = false; } }];
+  ch.busy = true; ch.si = 0; ch.st = null;
+}
+
+// ── 가젤 음악 틀기: 턴테이블 누르면 가젤이 가서 뚜껑 열고 → 장식장에서 LP 꺼내 올리고 → 뚜껑 닫으면 30분 동안 돌며 음표가 흘러나옴 ──
+const MUSIC = 1800 * 1000;
+const playing = () => hot.musicAt && Date.now() - hot.musicAt < MUSIC;
+function playRecord() {
+  const ch = chars[0], c = ch.c, P = hot.player;
+  if (playing() || ch.music) return;                // 이미 틀었거나 가는 중
+  ch.music = true;
+  let a, b;
+  ch.steps = [
+    ...leaveSteps(ch), { walk: [1.8, 11.85], face: -Math.PI / 2 },
+    { dur: 0.5, start: () => { c.pose = "reach"; }, fn: p => { P.lidG.rotation.z = 1.25 * ease(p); } },              // 뚜껑 열기
+    { dur: 0.9, start: () => { P.vinyl.visible = true; P.vinyl.rotation.set(Math.PI / 2, 0, 0); a = P.shelf.clone(); b = P.on.clone(); },   // LP 꺼내서 올리기
+      fn: p => { const q = ease(p); P.vinyl.position.lerpVectors(a, b, q); P.vinyl.position.y += Math.sin(q * Math.PI) * 0.35; P.vinyl.rotation.x = Math.PI / 2 * (1 - q); } },
+    { dur: 0.5, fn: p => { P.lidG.rotation.z = 1.25 * (1 - ease(p)); }, end: () => { c.pose = null; hot.musicAt = Date.now(); ch.music = false; } },   // 뚜껑 닫고 재생 시작
+    { walk: [HOMES[0][0], HOMES[0][1]], face: HOMES[0][2] },
+  ];
+  ch.si = 0; ch.st = null;
+}
+
+// ── 가젤·톰슨 같이 하기: 트리 누르면 둘이 트리 구경, 소파 누르면 둘이 소파에 앉기. 끝나면 원래 서 있던 자리로 ──
+const HUBS = [[12.0, 7.6], [13.0, 8.4]];          // 빨래하러 갈 때 거치는 방 가운데
+const HOMES = [[6.7, 7.0, 0.95], [9.5, 7.0, 0.55]]; // 원래 서 있는 자리 [x, z, 보는 방향]
+const SEAT_TOP = 0.99;                             // 소파 앉는 면 높이
+const ACTS = {                                     // spot 서거나 앉는 자리(가젤·톰슨), face 보는 방향, path 들어가는 길, dur 머무는 시간(초)
+  sofa: { dur: 20, sit: "chair", spot: [[7.98, 1.65], [9.62, 1.65]], face: 0, path: k => [[11.6, 3.0], [k ? 9.62 : 7.98, 2.9]] },
+  tree: { dur: 10, spot: [[2.9, 14.8], [2.9, 16.0]], face: -Math.PI / 2, path: k => [[4.0, k ? 16.0 : 14.8]] },
+};
+const leaveSteps = (ch) => {                       // 앉아 있었으면 일어나서, 들어온 길을 거꾸로 나가기
+  const c = ch.c, steps = [{ fn: () => { c.sit = null; c.pose = null; ch.sitY = 0; } }, { dur: 0.35 }];
+  if (ch.path) for (const w of [...ch.path].reverse()) steps.push({ walk: w });
+  ch.path = null;
+  return steps;
+};
+function goTogether(name) {
+  const act = ACTS[name];
+  chars.forEach((ch, k) => {
+    if (ch.busy) return;                           // 빨래 중인 톰슨은 빼고
+    const c = ch.c, path = act.path(k), sitY = act.sit ? SEAT_TOP - c.hipY - 0.06 : 0, [hx, hz, hf] = HOMES[k];
+    ch.steps = [
+      ...leaveSteps(ch), ...path.map(w => ({ walk: w })), { walk: act.spot[k], face: act.face },
+      { fn: () => { ch.path = path; c.sit = act.sit || null; ch.sitY = sitY; } },
+      { dur: act.dur },
+      { fn: () => { ch.steps.push(...leaveSteps(ch), { walk: [hx, hz], face: hf }); } },   // 다 쉬었으면 원래 자리로
+    ];
+    ch.si = 0; ch.st = null;
+  });
+}
 
 // ── 반려묘 둘: 봉구(회색), 하치(흰색 + 연회색 포인트) — 브리티시 숏헤어 느낌 ──
 // 가젤·톰슨이 키우는 고양이라 둘보다 훨씬 작게(키 약 1/3). 가끔 벌러덩 뒤집어 눕는다.
@@ -979,11 +1521,12 @@ hachi.root.position.set(11.6, 0.06, 8.4); hachi.root.rotation.y = 2.0;
 // ── 고양이 돌아다니기: 걷기 → 쉬기 → (가끔) 벌러덩 → 다시 걷기 ──
 // 가구·가젤·톰슨을 피해서 빈 바닥으로만 걷는다. 둘은 따로 움직인다. 누르면 그 자리에서 바로 벌러덩.
 const BLOCKED = [                                  // [x0, z0, x1, z1] 고양이가 못 지나가는 곳 (가구 + 여유)
-  [0, 0, 2.7, 1.2], [0, 4.6, 1.4, 9.2], [4.8, 0, 11.2, 2.5],
-  [6.5, 3.1, 9.5, 5.1], [17.2, 0, 20.6, 1.7], [0, 11.3, 2.5, 13.7], [12.3, 0, 15.5, 1.4],
-  [6.0, 6.3, 7.4, 7.7], [8.8, 6.3, 10.2, 7.7],
-  [20.1, 0, 21.2, 5.2], [22.2, 0, 24, 1.9],        // 세탁실 샷시, 세탁기·건조기
+  [0, 0, 2.7, 1.2], [0, 5.1, 1.4, 9.7], [4.8, 0, 11.2, 2.5],
+  [6.5, 3.1, 9.5, 5.1], [17.2, 0, 20.6, 1.7], [0, 14.1, 2.5, 16.5], [0, 10.7, 1.4, 12.9], [12.2, 0, 15.4, 1.4], [15.6, 0, 17.4, 1.5],
+  [20.1, 0, 21.2, 5.2], [22.2, 0, 24, 1.9], [20.8, 0, 22.3, 1.3],   // 세탁실 샷시, 세탁기·건조기, 빨래 바구니
   [15.3, 12.8, 19.5, 17.6],                         // 식탁 + 의자 4개
+  [12.3, 2.6, 14.1, 3.8],                           // 캣터널
+  [7.75, 10.15, 8.25, 10.65],                       // 바닥 장난감
 ];
 const free = (x, z) => x > 0.7 && x < W - 0.7 && z > 0.8 && z < D - 0.7 &&
   !BLOCKED.some(([x0, z0, x1, z1]) => x > x0 && x < x1 && z > z0 && z < z1);
@@ -1014,13 +1557,14 @@ function catRoll(pet, t) {                         // 0 = 서 있음, 1 = 벌러
 function startRoll(pet, t) { pet.state = "roll"; pet.since = t; pet.until = t + ROLL; }
 const rollNow = pet => { const t = clock.getElapsedTime(); if (!pet.task && pet.state !== "roll") startRoll(pet, t); };
 // ── 놀이: 캣타워 누르면 봉구가 봉을 타고 올라가 꼭대기 발판에서 창밖 구경, 캣휠 누르면 하치가 바퀴에 들어가 달리기 ──
-const RUN = 5, HOP = 0.7;                          // 달리는 시간, 바퀴에 뛰어들고 나오는 시간 (초)
-const CLIMB = 2.4, UP = 0.6, WATCH = 8, DOWN = 0.8;   // 봉 오르기, 발판으로 폴짝, 창밖 구경, 뛰어내리기 (초)
+const RUN = 5, HOP = 0.45;                          // 달리는 시간, 바퀴에 뛰어들고 나오는 시간 (초)
+const BAT = 8;                                     // 장난감 잡으려고 서서 앞발 흔드는 시간 (초)
+const CLIMB = 1.1, UP = 0.6, WATCH = 8, DOWN = 0.8;   // 봉 오르기, 발판으로 폴짝, 창밖 구경, 뛰어내리기 (초)
 const SIT = { pitch: -0.75, lift: 1.9, legs: "sit", head: 0.6, tail: 0.5, wag: 0.6 };   // 발판에 앉은 자세
 function startTask(pet, kind) {
   if (pet.task) return;                            // 이미 놀고 있으면 무시
   pet.task = kind; pet.state = "walk";
-  const at = kind === "tower" ? hot.towerAt.base : hot.wheelAt.door;
+  const at = kind === "tower" ? hot.towerAt.base : kind === "toy" ? hot.toy.at[pets.indexOf(pet)] : hot.wheelAt.door;
   pet.goal = new THREE.Vector3(at.x, 0, at.z);
 }
 const lerp = (a, b, p) => a + (b - a) * p;
@@ -1030,6 +1574,12 @@ function doTask(pet, t) {                          // 놀이 중이면 true (보
   const tw = hot.towerAt;
   const next = (st) => { pet.state = st; pet.since = t; };
   const done = () => { pet.state = "idle"; pet.task = null; pet.pose = null; pet.until = t + 2; };
+  if (pet.state === "bat") {                       // 장난감 앞에서 서서 앞발로 톡톡 (상대 고양이와 마주 보고)
+    face(hot.toy.face[pets.indexOf(pet)], 0.2);
+    pet.pose = { pitch: -1.1, lift: 1.9, legs: "bat", head: 0.75, tail: -0.4, wag: 0.5 };
+    if (c > BAT) done();
+    return true;
+  }
   if (pet.state === "climb") {                     // 봉에 매달려 위로 (배는 봉 쪽, 옆모습이 카메라 쪽)
     face(Math.PI * 0.75, 0.3);
     const p = Math.min(1, c / CLIMB);
@@ -1088,10 +1638,10 @@ function updatePet(pet, t, dt) {                   // 고양이 한 마리의 �
     turn = Math.atan2(Math.sin(turn), Math.cos(turn));
     root.rotation.y += turn * Math.min(1, dt * 6);
     if (d < 0.05) {
-      if (pet.task) { pet.state = pet.task === "tower" ? "climb" : "hopIn"; pet.since = t; return; }
+      if (pet.task) { pet.state = pet.task === "tower" ? "climb" : pet.task === "toy" ? "bat" : "hopIn"; pet.since = t; return; }
       pet.state = "idle"; pet.until = t + 2 + Math.random() * 4; return;
     }
-    const step = Math.min(d, (pet.task ? 1.8 : pet.speed) * dt * (Math.abs(turn) > 1 ? 0.3 : 1));   // 놀러 갈 땐 신나서 빨리
+    const step = Math.min(d, (pet.task ? 3.4 : pet.speed) * dt * (Math.abs(turn) > 1 ? 0.3 : 1));   // 놀러 갈 땐 신나서 빨리
     root.position.x += (dx / d) * step; root.position.z += (dz / d) * step;
   } else if (t >= pet.until) {
     if (pet.state === "idle" && Math.random() < 0.35) return startRoll(pet, t);
@@ -1143,6 +1693,12 @@ renderer.domElement.addEventListener("pointerup", e => {
   if (ray.intersectObject(hot.photo, true).length) openPhoto();
   else if (ray.intersectObject(hot.tower, true).length) startTask(pets[0], "tower");   // 봉구
   else if (ray.intersectObject(hot.wheel, true).length) startTask(pets[1], "wheel");     // 하치
+  else if (ray.intersectObject(hot.toyG, true).length) pets.forEach(p => startTask(p, "toy"));   // 봉구·하치: 장난감 잡기
+  else if (ray.intersectObject(hot.playerG, true).length) playRecord();                    // 가젤: LP 틀기
+  else if (ray.intersectObject(hot.tree, true).length) goTogether("tree");                // 둘이 트리 구경
+  else if (ray.intersectObject(hot.sofa, true).length) goTogether("sofa");                // 둘이 소파에 앉기
+  else if (ray.intersectObject(hot.washer.g, true).length) startLaundry("wash");          // 톰슨: 세탁기에 빨래 넣기
+  else if (ray.intersectObject(hot.dryer.g, true).length) startLaundry("dry");            // 톰슨: 건조기로 옮기기
 });
 // 누를 수 있는 것 위에서는 손가락 모양 커서
 renderer.domElement.addEventListener("pointermove", e => {
@@ -1150,7 +1706,7 @@ renderer.domElement.addEventListener("pointermove", e => {
   const r = renderer.domElement.getBoundingClientRect();
   ptr.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
   ray.setFromCamera(ptr, camera);
-  const targets = [hot.photo, hot.tower, hot.wheel, ...chars.map(c => c.c.root), ...pets.map(p => p.c.root)];
+  const targets = [hot.photo, hot.playerG, hot.toyG, hot.tower, hot.wheel, hot.washer.g, hot.dryer.g, hot.tree, hot.sofa, ...chars.map(c => c.c.root), ...pets.map(p => p.c.root)];
   renderer.domElement.style.cursor = ray.intersectObjects(targets, true).length ? "pointer" : "";
 });
 // ── 액자 사진 크게 보기 (누르거나 Esc 로 닫기) ──
@@ -1184,13 +1740,16 @@ function placeTags() {
 const clock = new THREE.Clock();
 function tick() {
   const t = clock.getElapsedTime();
+  const dt0 = Math.min(0.25, t - (tick.prev ?? t)); tick.prev = t;
   chars.forEach((ch, i) => {
-    let y = still ? 0 : Math.abs(Math.sin(t * 1.8 + i * 1.3)) * 0.04;
+    updateSteps(ch, t, dt0);
+    ch.yOff = (ch.yOff || 0) + ((ch.sitY || 0) - (ch.yOff || 0)) * Math.min(1, dt0 * 8);   // 앉고 일어설 때 높이 부드럽게
+    let y = still || ch.c.sit ? 0 : ch.c.walking ? Math.abs(Math.sin(t * 10)) * 0.07 : Math.abs(Math.sin(t * 1.8 + i * 1.3)) * 0.04;
     if (ch.hop >= 0) {
       const p = (t - ch.hop) / 0.55;
       if (p >= 1) ch.hop = -1; else y += Math.sin(p * Math.PI) * 0.7;
     }
-    ch.c.root.position.y = 0.06 + y;
+    ch.c.root.position.y = 0.06 + y + ch.yOff;
   });
   const dt = Math.min(0.25, t - (tick.last ?? t)); tick.last = t;   // 창이 잠깐 멈춰도 순간이동 안 하게
   pets.forEach((pet, k) => {
@@ -1198,7 +1757,7 @@ function tick() {
     updatePet(pet, t, dt);
     const r = catRoll(pet, t);
     const running = pet.state === "run", walking = pet.state === "walk" || running;
-    const sp = running ? 18 : 9;                                  // 바퀴에선 다리를 두 배 빨리
+    const sp = running ? 28 : pet.task ? 16 : 9;                  // 놀러 갈 땐 빠르게, 바퀴에선 더 빠르게
     // 놀이 자세 (봉 타기·발판에 앉기): 목표 자세로 부드럽게 바뀜
     const P = pet.pose, sm = Math.min(1, dt * 10);
     pet.pz = pet.pz || { pitch: 0, lift: 0, head: 0 };
@@ -1212,19 +1771,60 @@ function tick() {
     const wig = r > 0.95 ? Math.sin(t * 6 + k) * 0.35 : 0;        // 뒤집혀서 발 꼼지락
     cat.legs.forEach((l, i) => {                                  // 뒤집히면 다리를 양옆으로 쫙 (배가 보이게)
       const gait = walking ? Math.sin(t * sp + k) * (running ? 0.8 : 0.5) * (i === 0 || i === 3 ? 1 : -1) : 0;   // 걸을 때 대각선 다리끼리
-      if (P && P.legs === "climb") l.rotation.x = Math.sin(t * 10 + (i % 2) * Math.PI + (i < 2 ? 0 : Math.PI / 2)) * 0.6;   // 봉 타기: 번갈아 쭉쭉
-      else if (P && P.legs === "sit") l.rotation.x = i < 2 ? 0.75 : -1.4;   // 앉기: 앞발은 곧게, 뒷발은 접기
+      if (P && P.legs === "climb") l.rotation.x = Math.sin(t * 22 + (i % 2) * Math.PI + (i < 2 ? 0 : Math.PI / 2)) * 0.6;   // 봉 타기: 번갈아 쭉쭉
+      else if (P && P.legs === "sit") l.rotation.x = i < 2 ? 0.75 : -1.4;
+      else if (P && P.legs === "bat") l.rotation.x = i < 2 ? -1.5 + Math.sin(t * 11 + i * Math.PI) * 0.6 : 1.1;   // 앞발 번갈아 위로 휙휙, 뒷발은 바닥에   // 앉기: 앞발은 곧게, 뒷발은 접기
       else l.rotation.x = wig * (i % 2 ? 1 : -1) + gait;
       l.rotation.z = r * (i % 2 ? 1.0 : -1.0);
     });
     cat.tail.rotation.x = P ? P.tail : TAIL_UP * (1 - r);       // 서 있으면 위로, 뒤집히면 바닥 쪽으로 내림
     cat.tail.rotation.y = Math.sin(t * (r > 0.95 ? 4 : P ? 2.4 : 1.6) + k * 2) * (P ? P.wag : 0.3);   // 앉아 있을 땐 크게 살랑
   });
-  if (pets[1].state === "run") hot.wheelSpin.rotation.z -= dt * 3.5;   // 하치가 달리면 바퀴가 돌아감
+  if (pets[1].state === "run") hot.wheelSpin.rotation.z -= dt * 8;   // 하치가 달리면 바퀴가 돌아감
+  // 세탁기: 문 닫고 30분 동안 빨래가 빙글빙글 / 건조기: 문 닫고 30분 동안 빙글빙글
+  // 문이 열리면 바로 멈춤 → 세탁 중에 건조기를 누르면 톰슨이 세탁기 문을 여는 순간 멈추고, 빨래를 건조기로 옮겨 이어서 건조
+  const now = Date.now(), shut = u => u.door.rotation.y < 0.01;
+  if (!hot.moving) {
+    if (hot.laundry === "washer" && now - hot.washAt < 1800 * 1000 && shut(hot.washer)) hot.spinCloth("washer", t * 5);
+    if (hot.laundry === "dryer" && now - hot.dryAt < 1800 * 1000 && shut(hot.dryer)) hot.spinCloth("dryer", t * 3);
+  }
+  // 건조기에 넣고 30분이 지나면 다 마른 걸로: 건조기·세탁기 비우고 바구니에 새 빨래거리 (톰슨이 일하는 중이면 끝난 뒤에)
+  if (hot.laundry === "dryer" && Date.now() - hot.dryAt > 1800 * 1000 && !chars[1].steps) {
+    hot.clothes.forEach((_, i) => hot.placeCloth(i, "basket")); hot.laundry = "basket";
+  }
+  // LP 재생 중: 판이 돌고 반투명 음표가 위로 흘러나옴. 30분 지나면 멈추고 LP 는 장식장으로 (숨김)
+  const P = hot.player, on = playing();
+  if (on) {
+    P.vinyl.position.copy(P.on); P.vinyl.rotation.set(0, P.spin.rotation.y, 0);
+    P.spin.rotation.y += dt * 3.5;
+  } else if (hot.musicAt && !chars[0].music) { P.vinyl.visible = false; hot.musicAt = 0; }
+  // 음표: 턴테이블에서 거실 가운데 쪽으로 부채꼴처럼 넓게 퍼지며 둥실둥실 흘러감 (한 바퀴 6.3초, 18개가 차례로)
+  P.notes.forEach((n, k) => {
+    n.g.visible = on && !still;
+    if (!n.g.visible) return;
+    const q = ((t + k * 0.35) % 6.3) / 6.3, ang = -0.4 + ((k * 7) % 18 / 17 - 0.5) * 1.4, L = 1.0 + (k % 4) * 0.45;   // ang: 퍼지는 방향, L: 멀리 가는 정도
+    const d = q * 4.2 * L / 1.7;
+    n.g.position.set(P.top.x + Math.cos(ang) * d, P.top.y + Math.min(q * 3, 1) * 1.5 + Math.sin(q * 9 + k) * 0.18, P.top.z + Math.sin(ang) * d);
+    n.g.rotation.z = Math.sin(q * 6 + k) * 0.25;
+    n.g.scale.setScalar(1.1 + q * 0.9);
+    n.m.opacity = Math.min(1, q * 6) * Math.min(1, (1 - q) * 3) * 0.7;
+  });
+  // 바닥 장난감: 평소엔 살랑, 고양이가 앞발로 칠 땐 크게 흔들림
+  const batting = pets.some(p => p.state === "bat");
+  hot.toy.sway.rotation.z = still ? 0 : Math.sin(t * 2.1) * 0.08 + (batting ? Math.sin(t * 7.3) * 0.35 : 0);
+  hot.toy.sway.rotation.x = still ? 0 : Math.sin(t * 1.7 + 1) * 0.05 + (batting ? Math.sin(t * 5.1) * 0.15 : 0);
+  // 트리 전구: 5초마다 리듬이 바뀜 — 제각각 반짝 → 줄지어 흐르기 → 다 같이 깜빡
+  const mode = Math.floor(t / 5) % 3;
+  hot.bulbs.forEach((m, i) => {
+    let v;
+    if (mode === 0) v = 0.5 + 0.5 * Math.sin(t * 5 + i * 2.39);              // 제각각 반짝반짝
+    else if (mode === 1) v = Math.sin(t * 7 - i * 0.7) > 0.2 ? 1 : 0.1;       // 줄지어 흐르기
+    else v = Math.floor(t * 2.2) % 2 ? 1 : 0.08;                             // 다 같이 깜빡
+    m.emissiveIntensity = still ? 0.9 : 0.1 + v * 1.5;
+  });
+  hot.star.emissiveIntensity = 0.45 + (still ? 0 : Math.sin(t * 2) * 0.2);   // 별은 은은하게 숨쉬듯
   if (!still) {
-    gazelle.ears[0].rotation.x = Math.max(0, Math.sin(t * 2.7)) * -0.25;
-    gazelle.ears[1].rotation.x = Math.max(0, Math.sin(t * 2.7 + 2)) * -0.2;
-    thomson.tail.rotation.z = -0.22 + Math.sin(t * 2.2) * 0.1;
+    gazelle.anim(t); thomson.anim(t);
     heart.position.y = 2.7 + Math.sin(t * 2) * 0.08;
     heart.rotation.y = t * 0.8;
   }
